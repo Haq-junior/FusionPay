@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "fusionPay_backend": {
+      "main": "src/fusionPay_backend/main.mo",
+      "type": "motoko"
+    },
+    "fusionPay_frontend": {
+      "dependencies": [
+        "fusionPay_backend"
+      ],
+      "source": [
+        "src/fusionPay_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "fusionPay_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
