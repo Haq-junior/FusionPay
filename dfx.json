@@ -8,11 +8,14 @@
       "dependencies": [
         "fusionPay_backend"
       ],
+      "frontend": {
+        "entrypoint": "src/fusionPay_frontend/src/main.tsx"
+      },
       "source": [
         "src/fusionPay_frontend/dist"
       ],
       "type": "assets",
-      "workspace": "fusionPay_frontend"
+      "build": "cd src/fusionPay_frontend && npm install && npm run build"
     }
   },
   "defaults": {

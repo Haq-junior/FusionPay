@@ -5,14 +5,10 @@
   },
   "name": "fusionPay",
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "prebuild": "npm run prebuild --workspaces --if-present",
-    "pretest": "npm run prebuild --workspaces --if-present",
-    "start": "npm start --workspaces --if-present",
-    "test": "npm test --workspaces --if-present"
+    "build": "cd src/fusionPay_frontend && npm run build",
+    "prebuild": "cd src/fusionPay_frontend && npm install",
+    "start": "cd src/fusionPay_frontend && npm start",
+    "test": "cd src/fusionPay_frontend && npm test"
   },
-  "type": "module",
-  "workspaces": [
-    "src/fusionPay_frontend"
-  ]
+  "type": "module"
 }
