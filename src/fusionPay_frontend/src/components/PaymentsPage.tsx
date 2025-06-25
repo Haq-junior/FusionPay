@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { gsap } from 'gsap'
 import { useNavigate } from 'react-router-dom'
 import { 
@@ -9,9 +9,13 @@ import {
   Plus,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react'
 import BackButton from './BackButton'
+import { useAuth } from '../contexts/AuthContext'
+import { useBackend } from '../utils/useBackend'
+import { Payment as BackendPayment } from '../utils/backend'
 
 interface Payment {
   id: string
@@ -26,42 +30,50 @@ interface Payment {
 
 const PaymentsPage: React.FC = () => {
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
+  const { 
+    getUserPayments, 
+    formatPaymentAmount, 
+    formatTimestamp,
+    getPaymentStatusText,
+    getPaymentTypeText,
+    isLoading,
+    error 
+  } = useBackend()
+  
   const headerRef = useRef<HTMLDivElement>(null)
   const quickActionsRef = useRef<HTMLDivElement>(null)
   const paymentsListRef = useRef<HTMLDivElement>(null)
+  
+  const [backendPayments, setBackendPayments] = useState<BackendPayment[]>([])
 
-  const recentPayments: Payment[] = [
-    {
-      id: '1',
-      type: 'momo',
-      recipient: 'MTN Mobile Money - 024 123 4567',
-      amount: 'GHS 250.00',
-      icpAmount: '1.05 ICP',
-      status: 'completed',
-      date: '2 hours ago',
-      reference: 'FP-MM-001234'
-    },
-    {
-      id: '2',
-      type: 'virtual-card',
-      recipient: 'Amazon Online Store',
-      amount: 'GHS 125.50',
-      icpAmount: '0.52 ICP',
-      status: 'completed',
-      date: 'Yesterday',
-      reference: 'FP-VC-001235'
-    },
-    {
-      id: '3',
-      type: 'bank',
-      recipient: 'GCB Bank - John Doe',
-      amount: 'GHS 500.00',
-      icpAmount: '2.10 ICP',
-      status: 'pending',
-      date: '2 days ago',
-      reference: 'FP-BT-001236'
+  // Load user payments
+  useEffect(() => {
+    const loadPayments = async () => {
+      if (!isAuthenticated) return
+
+      try {
+        const payments = await getUserPayments()
+        setBackendPayments(payments)
+      } catch (err) {
+        console.error('Failed to load payments:', err)
+      }
     }
-  ]
+
+    loadPayments()
+  }, [isAuthenticated, getUserPayments])
+
+  // Convert backend payments to UI format
+  const recentPayments: Payment[] = backendPayments.map(payment => ({
+    id: payment.id,
+    type: getPaymentTypeText(payment.paymentType) === 'Mobile Money' ? 'momo' : 'virtual-card',
+    recipient: `${getPaymentTypeText(payment.paymentType)} - ${payment.description}`,
+    amount: formatPaymentAmount(payment.amount, payment.currency),
+    icpAmount: `${(Number(payment.amount) / 238).toFixed(2)} ICP`,
+    status: getPaymentStatusText(payment.status).toLowerCase() as 'completed' | 'pending' | 'failed',
+    date: formatTimestamp(payment.timestamp),
+    reference: payment.id
+  }))
 
   useEffect(() => {
     const tl = gsap.timeline()

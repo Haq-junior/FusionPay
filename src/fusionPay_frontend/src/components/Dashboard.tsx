@@ -19,6 +19,8 @@ import {
   Download
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { useBackend } from '../utils/useBackend'
+import { Payment, VirtualCard } from '../utils/backend'
 import ICPConnectionStatus from './ICPConnectionStatus'
 import ProfileMenu from './ProfileMenu'
 import LoginPrompt from './LoginPrompt'
@@ -35,12 +37,24 @@ interface Transaction {
 }
 
 const Dashboard: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, principal } = useAuth()
+  const { 
+    getUserPayments, 
+    getUserCards, 
+    formatPaymentAmount, 
+    formatTimestamp,
+    getPaymentStatusText,
+    getPaymentTypeText,
+    isLoading: backendLoading,
+    error 
+  } = useBackend()
+  
   const navigate = useNavigate()
   const [showBalance, setShowBalance] = useState(true)
-  const [icpBalance] = useState('15.42')
-  const [ghsBalance] = useState('3,500.00')
   const [activeNav, setActiveNav] = useState('home')
+  const [userPayments, setUserPayments] = useState<Payment[]>([])
+  const [userCards, setUserCards] = useState<VirtualCard[]>([])
+  const [totalBalance, setTotalBalance] = useState<number>(0)
   
   const balanceCardRef = useRef<HTMLDivElement>(null)
   const actionsRef = useRef<HTMLDivElement>(null)
@@ -48,44 +62,42 @@ const Dashboard: React.FC = () => {
   const sideNavRef = useRef<HTMLDivElement>(null)
   const bottomNavRef = useRef<HTMLDivElement>(null)
 
-  const transactions: Transaction[] = [
-    {
-      id: '1',
-      type: 'sent',
-      amount: 'GHS 250.00',
-      icpAmount: '1.05 ICP',
-      recipient: 'MTN Mobile Money',
-      date: '2 hours ago',
-      status: 'completed'
-    },
-    {
-      id: '2',
-      type: 'received',
-      amount: 'GHS 1,200.00',
-      icpAmount: '5.12 ICP',
-      recipient: 'Salary Payment',
-      date: 'Yesterday',
-      status: 'completed'
-    },
-    {
-      id: '3',
-      type: 'sent',
-      amount: 'GHS 75.50',
-      icpAmount: '0.32 ICP',
-      recipient: 'Vodafone Cash',
-      date: '2 days ago',
-      status: 'completed'
-    },
-    {
-      id: '4',
-      type: 'sent',
-      amount: 'GHS 450.00',
-      icpAmount: '1.89 ICP',
-      recipient: 'AirtelTigo Money',
-      date: '3 days ago',
-      status: 'completed'
+  // Load user data when authenticated
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!isAuthenticated) return
+
+      try {
+        // Load payments and cards in parallel
+        const [payments, cards] = await Promise.all([
+          getUserPayments(),
+          getUserCards()
+        ])
+
+        setUserPayments(payments)
+        setUserCards(cards)
+        
+        // Calculate total balance from all cards
+        const total = cards.reduce((sum, card) => sum + Number(card.balance), 0)
+        setTotalBalance(total)
+      } catch (err) {
+        console.error('Failed to load user data:', err)
+      }
     }
-  ]
+
+    loadUserData()
+  }, [isAuthenticated, getUserPayments, getUserCards])
+
+  // Convert backend payments to dashboard transactions
+  const transactions: Transaction[] = userPayments.slice(0, 4).map(payment => ({
+    id: payment.id,
+    type: principal === payment.from.toString() ? 'sent' : 'received',
+    amount: formatPaymentAmount(payment.amount, payment.currency),
+    icpAmount: `${(Number(payment.amount) / 238).toFixed(2)} ICP`, // Mock ICP conversion
+    recipient: getPaymentTypeText(payment.paymentType),
+    date: formatTimestamp(payment.timestamp),
+    status: getPaymentStatusText(payment.status).toLowerCase() as 'completed' | 'pending'
+  }))
 
   useEffect(() => {
     // Only run animations if elements are mounted
@@ -223,7 +235,7 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  if (isLoading) {
+  if (authLoading || backendLoading) {
     return <LoadingPage message="Loading your dashboard..." />
   }
 
@@ -340,10 +352,10 @@ const Dashboard: React.FC = () => {
                   
                   <div className="text-center">
                     <div className="text-4xl md:text-5xl font-extrabold text-white mb-2">
-                      {showBalance ? `${icpBalance} ICP` : '••••••'}
+                      {showBalance ? `${(totalBalance / 238).toFixed(2)} ICP` : '••••••'}
                     </div>
                     <div className="flex items-center justify-center space-x-2 text-lg text-white/80">
-                      <span>~GHS {showBalance ? ghsBalance : '••••••'}</span>
+                      <span>~GHS {showBalance ? totalBalance.toLocaleString() : '••••••'}</span>
                       <RefreshCw className="w-4 h-4 cursor-pointer hover:rotate-180 transition-transform duration-500" />
                     </div>
                   </div>

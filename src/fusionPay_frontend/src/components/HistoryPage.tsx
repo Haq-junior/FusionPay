@@ -10,9 +10,13 @@ import {
   AlertCircle,
   Filter,
   Search,
-  Download
+  Download,
+  RefreshCw
 } from 'lucide-react'
 import BackButton from './BackButton'
+import { useAuth } from '../contexts/AuthContext'
+import { useBackend } from '../utils/useBackend'
+import { Payment as BackendPayment } from '../utils/backend'
 
 interface Transaction {
   id: string
@@ -28,71 +32,54 @@ interface Transaction {
 
 const HistoryPage: React.FC = () => {
   const navigate = useNavigate()
+  const { isAuthenticated, principal } = useAuth()
+  const { 
+    getUserPayments, 
+    formatPaymentAmount, 
+    formatTimestamp,
+    getPaymentStatusText,
+    getPaymentTypeText,
+    isLoading,
+    error 
+  } = useBackend()
+  
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterType, setFilterType] = useState('all')
+  const [backendPayments, setBackendPayments] = useState<BackendPayment[]>([])
   
   const headerRef = useRef<HTMLDivElement>(null)
   const filtersRef = useRef<HTMLDivElement>(null)
   const transactionsRef = useRef<HTMLDivElement>(null)
 
-  const allTransactions: Transaction[] = [
-    {
-      id: '1',
-      type: 'sent',
-      category: 'momo',
-      amount: 'GHS 250.00',
-      icpAmount: '1.05 ICP',
-      recipient: 'MTN Mobile Money',
-      date: '2 hours ago',
-      status: 'completed',
-      reference: 'FP-MM-001234'
-    },
-    {
-      id: '2',
-      type: 'received',
-      category: 'icp-transfer',
-      amount: 'GHS 1,200.00',
-      icpAmount: '5.12 ICP',
-      recipient: 'Salary Payment',
-      date: 'Yesterday',
-      status: 'completed',
-      reference: 'FP-IT-001235'
-    },
-    {
-      id: '3',
-      type: 'sent',
-      category: 'virtual-card',
-      amount: 'GHS 75.50',
-      icpAmount: '0.32 ICP',
-      recipient: 'Amazon Online Store',
-      date: '2 days ago',
-      status: 'completed',
-      reference: 'FP-VC-001236'
-    },
-    {
-      id: '4',
-      type: 'sent',
-      category: 'bank',
-      amount: 'GHS 450.00',
-      icpAmount: '1.89 ICP',
-      recipient: 'GCB Bank Transfer',
-      date: '3 days ago',
-      status: 'pending',
-      reference: 'FP-BT-001237'
-    },
-    {
-      id: '5',
-      type: 'sent',
-      category: 'momo',
-      amount: 'GHS 100.00',
-      icpAmount: '0.42 ICP',
-      recipient: 'Vodafone Cash',
-      date: '1 week ago',
-      status: 'failed',
-      reference: 'FP-MM-001238'
+  // Load user payments
+  useEffect(() => {
+    const loadPayments = async () => {
+      if (!isAuthenticated) return
+
+      try {
+        const payments = await getUserPayments()
+        setBackendPayments(payments)
+      } catch (err) {
+        console.error('Failed to load payments:', err)
+      }
     }
-  ]
+
+    loadPayments()
+  }, [isAuthenticated, getUserPayments])
+
+  // Convert backend payments to UI format
+  const allTransactions: Transaction[] = backendPayments.map(payment => ({
+    id: payment.id,
+    type: principal === payment.from.toString() ? 'sent' : 'received',
+    category: getPaymentTypeText(payment.paymentType) === 'Mobile Money' ? 'momo' : 'virtual-card',
+    amount: formatPaymentAmount(payment.amount, payment.currency),
+    icpAmount: `${(Number(payment.amount) / 238).toFixed(2)} ICP`,
+    recipient: payment.description,
+    date: formatTimestamp(payment.timestamp),
+    status: getPaymentStatusText(payment.status).toLowerCase() as 'completed' | 'pending' | 'failed',
+    reference: payment.id
+  }))
 
   const filteredTransactions = allTransactions.filter(transaction => {
     const matchesSearch = transaction.recipient.toLowerCase().includes(searchTerm.toLowerCase()) ||

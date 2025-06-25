@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { AuthClient } from '@dfinity/auth-client'
 import { Identity } from '@dfinity/agent'
+import { backendService } from '../utils/backend'
 
 interface AuthContextType {
   isAuthenticated: boolean
@@ -52,6 +53,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIdentity(identity)
         setPrincipal(identity.getPrincipal().toString())
         setIsAuthenticated(true)
+        // Initialize backend service with authenticated client
+        await backendService.init(client)
+      } else {
+        // Initialize backend service without authentication
+        await backendService.init()
       }
     } catch (error) {
       console.error('Auth initialization failed:', error)
@@ -70,11 +76,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         identityProvider: import.meta.env.DEV 
           ? `http://localhost:4943/?canisterId=${import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID || 'rdmx6-jaaaa-aaaaa-aaadq-cai'}`
           : 'https://identity.ic0.app',
-        onSuccess: () => {
+        onSuccess: async () => {
           const identity = authClient.getIdentity()
           setIdentity(identity)
           setPrincipal(identity.getPrincipal().toString())
           setIsAuthenticated(true)
+          // Re-initialize backend service with authenticated client
+          await backendService.init(authClient)
         },
         onError: (error) => {
           console.error('Login failed:', error)
@@ -96,6 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIdentity(null)
       setPrincipal(null)
       setIsAuthenticated(false)
+      // Re-initialize backend service without authentication
+      await backendService.init()
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
