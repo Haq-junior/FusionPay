@@ -103,6 +103,9 @@ The frontend will be available at [http://localhost:8080](http://localhost:8080)
 - Backend: [http://localhost:4943?canisterId={asset_canister_id}](http://localhost:4943?canisterId={asset_canister_id})
 - Frontend: [http://localhost:8080](http://localhost:8080)
 
+- **Live Demo:** https://obm33-qyaaa-aaaab-qb4da-cai.icp0.io/
+- **Backend API:** https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=oipqh-gqaaa-aaaab-qb4cq-cai
+
 ## Environment Variables
 
 If you are hosting the frontend without DFX, ensure your project does not fetch the root key in production:
