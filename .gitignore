@@ -2,10 +2,19 @@
 .vscode/
 .idea/
 **/*~
+*.swp
+*.swo
 
 # Mac OSX temporary files
 .DS_Store
 **/.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+ehthumbs.db
+Thumbs.db
 
 # dfx temporary files
 .dfx/
@@ -23,6 +32,44 @@ dist/
 
 # environment variables
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# dependencies
+jspm_packages/
+
+# coverage
+coverage/
+*.lcov
+
+# TypeScript
+*.tsbuildinfo
+
+# cache
+.npm
+.eslintcache
+.stylelintcache
+
+# temporary
+tmp/
+temp/
+
+# testing
+/coverage
+
+# build outputs
+build/
+*.tgz
 
 # documentation
 doc.md
