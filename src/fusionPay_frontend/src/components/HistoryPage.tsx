@@ -17,6 +17,7 @@ import BackButton from './BackButton'
 import { useAuth } from '../contexts/AuthContext'
 import { useBackend } from '../utils/useBackend'
 import { Payment as BackendPayment } from '../utils/backend'
+import { usePriceData } from '../utils/priceService'
 
 interface Transaction {
   id: string
@@ -42,6 +43,7 @@ const HistoryPage: React.FC = () => {
     isLoading,
     error 
   } = useBackend()
+  const { getCurrentPrice } = usePriceData()
   
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
@@ -74,7 +76,7 @@ const HistoryPage: React.FC = () => {
     type: principal === payment.from.toString() ? 'sent' : 'received',
     category: getPaymentTypeText(payment.paymentType) === 'Mobile Money' ? 'momo' : 'virtual-card',
     amount: formatPaymentAmount(payment.amount, payment.currency),
-    icpAmount: `${(Number(payment.amount) / 238).toFixed(2)} ICP`,
+    icpAmount: `${(Number(payment.amount) / getCurrentPrice('GHS')).toFixed(2)} ICP`,
     recipient: payment.description,
     date: formatTimestamp(payment.timestamp),
     status: getPaymentStatusText(payment.status).toLowerCase() as 'completed' | 'pending' | 'failed',

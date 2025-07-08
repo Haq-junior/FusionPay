@@ -1,6 +1,7 @@
 import { Actor, HttpAgent, ActorSubclass } from '@dfinity/agent';
 import { AuthClient } from '@dfinity/auth-client';
 import { Principal } from '@dfinity/principal';
+import { config } from '../config';
 import { 
   _SERVICE as BackendService,
   PaymentType,
@@ -10,11 +11,13 @@ import {
   Result,
   Result_1,
   Result_2
-} from '../../../declarations/fusionPay_backend';
+} from '../../../declarations/fusionPay_backend/fusionPay_backend.did';
 import { 
-  idlFactory, 
-  canisterId 
+  idlFactory
 } from '../../../declarations/fusionPay_backend';
+
+// Use canister ID from config
+const canisterId = config.ic.backendCanisterId;
 
 // Backend service class
 export class FusionPayBackend {
@@ -23,13 +26,11 @@ export class FusionPayBackend {
 
   async init(authClient?: AuthClient) {
     try {
-      const host = import.meta.env.DEV 
-        ? 'http://localhost:4943' 
-        : 'https://ic0.app';
+      const host = config.ic.host;
 
       this.agent = new HttpAgent({ host });
 
-      if (import.meta.env.DEV) {
+      if (config.ic.network === 'local') {
         await this.agent.fetchRootKey();
       }
 
@@ -40,7 +41,7 @@ export class FusionPayBackend {
           identity 
         });
         
-        if (import.meta.env.DEV) {
+        if (config.ic.network === 'local') {
           await this.agent.fetchRootKey();
         }
       }
@@ -95,8 +96,13 @@ export class FusionPayBackend {
   // Virtual Card Management
   async createVirtualCard(currency: string): Promise<{ ok: VirtualCard } | { err: string }> {
     const actor = this.ensureActor();
-    const result = await actor.createVirtualCard(currency);
-    return result as { ok: VirtualCard } | { err: string };
+    try {
+      const result = await actor.createVirtualCard(currency);
+      return result as { ok: VirtualCard } | { err: string };
+    } catch (error) {
+      console.error('Backend createVirtualCard error:', error);
+      return { err: `Failed to create virtual card: ${error}` };
+    }
   }
 
   async getUserCards(): Promise<VirtualCard[]> {

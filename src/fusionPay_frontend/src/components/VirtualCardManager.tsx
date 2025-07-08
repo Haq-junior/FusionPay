@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { gsap } from 'gsap'
+import { useNavigate } from 'react-router-dom'
 import { 
   ArrowLeft, 
   Eye, 
@@ -19,6 +20,7 @@ import BackButton from './BackButton'
 import { useBackend } from '../utils/useBackend'
 import { VirtualCard as BackendVirtualCard, Payment } from '../utils/backend'
 import { useAuth } from '../contexts/AuthContext'
+import { usePriceData } from '../utils/priceService'
 
 interface Transaction {
   id: string
@@ -35,6 +37,7 @@ interface VirtualCardManagerProps {
 }
 
 const VirtualCardManager: React.FC<VirtualCardManagerProps> = ({ onBack }) => {
+  const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const { 
     getUserCards, 
@@ -50,6 +53,7 @@ const VirtualCardManager: React.FC<VirtualCardManagerProps> = ({ onBack }) => {
     getPaymentStatusText,
     clearError 
   } = useBackend()
+  const { getCurrentPrice } = usePriceData()
   
   const [showCardNumber, setShowCardNumber] = useState(false)
   const [showExpiry, setShowExpiry] = useState(false)
@@ -73,16 +77,76 @@ const VirtualCardManager: React.FC<VirtualCardManagerProps> = ({ onBack }) => {
   const expiryRef = useRef<HTMLSpanElement>(null)
   const cvvRef = useRef<HTMLSpanElement>(null)
 
-  // Card transactions will be replaced with real backend data when available
-  const cardTransactions: Transaction[] = userPayments.slice(0, 4).map(payment => ({
-    id: payment.id,
-    merchant: payment.description,
-    amount: formatPaymentAmount(payment.amount, payment.currency),
-    icpAmount: `${(Number(payment.amount) / 238).toFixed(2)} ICP`,
-    date: formatTimestamp(payment.timestamp),
-    status: getPaymentStatusText(payment.status).toLowerCase() as 'completed' | 'pending',
-    category: 'shopping' // Default category - can be enhanced later
-  }))
+  // Mock transaction data for demonstration
+  const mockTransactions: Transaction[] = [
+    {
+      id: 'txn_001',
+      merchant: 'Amazon',
+      amount: 'GHS 89.99',
+      icpAmount: '0.021 ICP',
+      date: 'Today, 2:30 PM',
+      status: 'completed',
+      category: 'shopping'
+    },
+    {
+      id: 'txn_002',
+      merchant: 'Netflix',
+      amount: 'GHS 45.99',
+      icpAmount: '0.011 ICP',
+      date: 'Yesterday, 8:15 PM',
+      status: 'completed',
+      category: 'entertainment'
+    },
+    {
+      id: 'txn_003',
+      merchant: 'KFC Ghana',
+      amount: 'GHS 32.50',
+      icpAmount: '0.008 ICP',
+      date: 'Dec 6, 1:45 PM',
+      status: 'completed',
+      category: 'food'
+    },
+    {
+      id: 'txn_004',
+      merchant: 'Steam Gaming',
+      amount: 'GHS 67.99',
+      icpAmount: '0.016 ICP',
+      date: 'Dec 5, 11:20 AM',
+      status: 'completed',
+      category: 'gaming'
+    },
+    {
+      id: 'txn_005',
+      merchant: 'Uber Ghana',
+      amount: 'GHS 18.75',
+      icpAmount: '0.004 ICP',
+      date: 'Dec 4, 6:30 PM',
+      status: 'completed',
+      category: 'shopping'
+    },
+    {
+      id: 'txn_006',
+      merchant: 'Shoprite',
+      amount: 'GHS 156.80',
+      icpAmount: '0.037 ICP',
+      date: 'Dec 3, 4:15 PM',
+      status: 'completed',
+      category: 'shopping'
+    }
+  ]
+
+  // Use mock data if no real payments are available, otherwise use real data
+  const cardTransactions: Transaction[] = userPayments.length > 0 
+    ? userPayments.slice(0, 6).map(payment => ({
+        id: payment.id,
+        merchant: payment.description,
+        amount: formatPaymentAmount(payment.amount, payment.currency),
+        icpAmount: `${(Number(payment.amount) / getCurrentPrice('GHS')).toFixed(3)} ICP`,
+        date: formatTimestamp(payment.timestamp),
+        status: getPaymentStatusText(payment.status).toLowerCase() as 'completed' | 'pending',
+        category: 'shopping' // Default category - can be enhanced later
+      }))
+    : mockTransactions
 
   // Load user's virtual cards and payments
   useEffect(() => {
@@ -129,16 +193,25 @@ const VirtualCardManager: React.FC<VirtualCardManagerProps> = ({ onBack }) => {
 
   // Create new virtual card
   const handleCreateCard = async () => {
-    if (!isAuthenticated) return
+    if (!isAuthenticated) {
+      console.error('User not authenticated')
+      return
+    }
     
     setIsCreatingCard(true)
+    clearError() // Clear any previous errors
+    
     try {
+      console.log('Creating virtual card with currency: GHS')
       const newCard = await createVirtualCard('GHS')
+      console.log('Virtual card created successfully:', newCard)
+      
       setUserCards(prev => [...prev, newCard])
       setSelectedCard(newCard)
       await loadCardBalance(newCard.id)
     } catch (err) {
       console.error('Failed to create virtual card:', err)
+      // Error will be shown in the UI through the error state from useBackend
     } finally {
       setIsCreatingCard(false)
     }
@@ -430,6 +503,22 @@ const VirtualCardManager: React.FC<VirtualCardManagerProps> = ({ onBack }) => {
               <p className="text-gray-400 mb-6">
                 Create your first virtual card to start making secure online payments with ICP
               </p>
+              
+              {/* Error Display */}
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg mb-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="text-sm">{error}</div>
+                    <button
+                      onClick={clearError}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               <button
                 onClick={handleCreateCard}
                 disabled={isCreatingCard}
@@ -465,6 +554,21 @@ const VirtualCardManager: React.FC<VirtualCardManagerProps> = ({ onBack }) => {
                   <span>{isCreatingCard ? 'Creating...' : 'New Card'}</span>
                 </button>
               </div>
+              
+              {/* Error Display */}
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg mb-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="text-sm">{error}</div>
+                    <button
+                      onClick={clearError}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )}
               
               <div className="flex space-x-2 overflow-x-auto pb-2">
                 {userCards.map((card, index) => (
@@ -655,7 +759,7 @@ const VirtualCardManager: React.FC<VirtualCardManagerProps> = ({ onBack }) => {
             </div>
 
             {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-4">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-8">
               <div className="max-w-3xl mx-auto space-y-4 lg:space-y-6">
                 {/* Card Controls */}
                 <div ref={detailsRef} className="space-y-4">
@@ -748,41 +852,58 @@ const VirtualCardManager: React.FC<VirtualCardManagerProps> = ({ onBack }) => {
                     </div>
                     
                     <div className="p-4">
-                      <div className="space-y-1">
-                        {cardTransactions.map((transaction, index) => {
-                          const IconComponent = getCategoryIcon(transaction.category)
-                          return (
-                            <div 
-                              key={transaction.id}
-                              className="flex justify-between items-center p-3 rounded-lg border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors"
-                              style={{ animationDelay: `${index * 0.1}s` }}
-                            >
-                              <div className="flex items-center space-x-3">
-                                <div className="p-2 rounded-full bg-purple-500/20 text-purple-400">
-                                  <IconComponent className="w-4 h-4" />
+                      {cardTransactions.length > 0 ? (
+                        <div className="space-y-1 max-h-80 overflow-y-auto custom-scrollbar">
+                          {cardTransactions.map((transaction, index) => {
+                            const IconComponent = getCategoryIcon(transaction.category)
+                            return (
+                              <div 
+                                key={transaction.id}
+                                className="flex justify-between items-center p-3 rounded-lg border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors group"
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <div className="p-2 rounded-full bg-purple-500/20 text-purple-400 group-hover:bg-purple-500/30 transition-colors">
+                                    <IconComponent className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <div className="font-medium text-white text-sm">{transaction.merchant}</div>
+                                    <div className="text-xs text-gray-400">{transaction.date}</div>
+                                  </div>
                                 </div>
-                                <div>
-                                  <div className="font-medium text-white text-sm">{transaction.merchant}</div>
-                                  <div className="text-xs text-gray-400">{transaction.date}</div>
+                                
+                                <div className="text-right">
+                                  <div className="font-semibold text-red-400 text-sm">
+                                    -{transaction.amount}
+                                  </div>
+                                  <div className="text-xs text-gray-400">
+                                    -{transaction.icpAmount}
+                                  </div>
+                                  <div className="flex items-center justify-end space-x-1 mt-1">
+                                    {transaction.status === 'completed' ? (
+                                      <>
+                                        <CheckCircle className="w-3 h-3 text-green-500" />
+                                        <span className="text-xs text-green-500">Completed</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <RefreshCw className="w-3 h-3 text-yellow-500 animate-spin" />
+                                        <span className="text-xs text-yellow-500">Pending</span>
+                                      </>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                              
-                              <div className="text-right">
-                                <div className="font-semibold text-red-400 text-sm">
-                                  -{transaction.amount}
-                                </div>
-                                <div className="text-xs text-gray-400">
-                                  -{transaction.icpAmount}
-                                </div>
-                                <div className="flex items-center justify-end space-x-1 mt-1">
-                                  <CheckCircle className="w-3 h-3 text-green-500" />
-                                  <span className="text-xs text-green-500">Completed</span>
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <CreditCard className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                          <div className="text-gray-400 text-sm">No transactions yet</div>
+                          <div className="text-gray-500 text-xs mt-1">Start using your virtual card to see activity here</div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

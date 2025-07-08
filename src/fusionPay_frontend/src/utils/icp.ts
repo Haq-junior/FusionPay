@@ -100,29 +100,6 @@ export const principalToAccountIdentifier = (principal: Principal, subAccount?: 
   return accountIdentifier
 }
 
-// Exchange rate utilities (mock implementation)
-export const getExchangeRate = async (fromCurrency: string, toCurrency: string): Promise<number> => {
-  // In a real implementation, this would fetch from an oracle or exchange API
-  const mockRates: Record<string, number> = {
-    'ICP-GHS': 238.50,
-    'ICP-USD': 12.45,
-    'ICP-USDT': 12.43,
-    'ICP-USDC': 12.44
-  }
-  
-  const rateKey = `${fromCurrency}-${toCurrency}`
-  return mockRates[rateKey] || 1
-}
-
-export const convertCurrency = async (
-  amount: number, 
-  fromCurrency: string, 
-  toCurrency: string
-): Promise<number> => {
-  const rate = await getExchangeRate(fromCurrency, toCurrency)
-  return amount * rate
-}
-
 // Transaction fee constants
 export const ICP_TRANSFER_FEE = BigInt(10_000) // 0.0001 ICP in e8s
 export const FUSIONPAY_FEE_RATE = 0.001 // 0.1%
@@ -135,3 +112,6 @@ export const calculateTransactionFees = (icpAmount: bigint) => {
     totalFees: ICP_TRANSFER_FEE + fusionPayFee
   }
 }
+
+// Note: For live exchange rates, use the PriceService from utils/priceService.ts
+// which fetches real-time rates from CoinGecko and ExchangeRate-API

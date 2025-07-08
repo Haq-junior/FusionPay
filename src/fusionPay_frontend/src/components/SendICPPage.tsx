@@ -119,11 +119,12 @@ const SendICPPage: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        <div 
-          ref={formContainerRef}
-          className="w-full max-w-lg mx-auto bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/10 relative"
-        >
+      <main className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="min-h-full flex items-center justify-center p-4">
+          <div 
+            ref={formContainerRef}
+            className="w-full max-w-lg mx-auto bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/10 relative my-4"
+          >
           <div className="p-6 md:p-8">
             {/* Form Fields */}
             <div className="space-y-6">
@@ -253,10 +254,11 @@ const SendICPPage: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
-      </main>
-    </div>
-  )
-}
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
 
 export default SendICPPage

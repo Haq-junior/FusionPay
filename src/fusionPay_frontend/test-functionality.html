@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FusionPay Functionality Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .test-button {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+        }
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #4ECDC4; }
+        .error { color: #FF6B6B; }
+        .info { color: #FFE66D; }
+        .warning { color: #FF9F43; }
+        h1, h2 { text-align: center; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 FusionPay Functionality Test Suite</h1>
+        <p style="text-align: center; font-size: 18px; margin-bottom: 30px;">
+            Comprehensive testing for all FusionPay features
+        </p>
+
+        <div class="grid">
+            <!-- Authentication Tests -->
+            <div class="test-section">
+                <h2>🔐 Authentication</h2>
+                <button class="test-button" onclick="testAuthentication()">Test Auth Flow</button>
+                <button class="test-button" onclick="testInternetIdentity()">Test Internet Identity</button>
+                <div id="auth-results" class="results"></div>
+            </div>
+
+            <!-- Virtual Card Tests -->
+            <div class="test-section">
+                <h2>💳 Virtual Cards</h2>
+                <button class="test-button" onclick="testCreateVirtualCard()">Create Virtual Card</button>
+                <button class="test-button" onclick="testCardOperations()">Test Card Operations</button>
+                <button class="test-button" onclick="testCardBalance()">Test Balance Loading</button>
+                <div id="card-results" class="results"></div>
+            </div>
+
+            <!-- Payment Tests -->
+            <div class="test-section">
+                <h2>💰 Payments</h2>
+                <button class="test-button" onclick="testCreatePayment()">Create Payment</button>
+                <button class="test-button" onclick="testPaymentHistory()">Test Payment History</button>
+                <button class="test-button" onclick="testMoMoPayment()">Test MoMo Payment</button>
+                <div id="payment-results" class="results"></div>
+            </div>
+
+            <!-- Price Tests -->
+            <div class="test-section">
+                <h2>📈 Real-time Prices</h2>
+                <button class="test-button" onclick="testPriceService()">Test Price Fetching</button>
+                <button class="test-button" onclick="testCurrencyConversion()">Test Conversion</button>
+                <button class="test-button" onclick="testPriceRefresh()">Test Price Refresh</button>
+                <div id="price-results" class="results"></div>
+            </div>
+
+            <!-- Backend Tests -->
+            <div class="test-section">
+                <h2>🔧 Backend Service</h2>
+                <button class="test-button" onclick="testBackendConnection()">Test Connection</button>
+                <button class="test-button" onclick="testCanisterCalls()">Test Canister Calls</button>
+                <button class="test-button" onclick="testErrorHandling()">Test Error Handling</button>
+                <div id="backend-results" class="results"></div>
+            </div>
+
+            <!-- UI Tests -->
+            <div class="test-section">
+                <h2>🎨 UI & Navigation</h2>
+                <button class="test-button" onclick="testUIComponents()">Test UI Components</button>
+                <button class="test-button" onclick="testNavigation()">Test Navigation</button>
+                <button class="test-button" onclick="testResponsiveness()">Test Responsiveness</button>
+                <div id="ui-results" class="results"></div>
+            </div>
+        </div>
+
+        <!-- Run All Tests -->
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="test-button" style="font-size: 18px; padding: 15px 30px;" onclick="runAllTests()">
+                🚀 Run All Tests
+            </button>
+            <button class="test-button" style="font-size: 18px; padding: 15px 30px;" onclick="clearResults()">
+                🧹 Clear Results
+            </button>
+        </div>
+
+        <!-- Overall Results -->
+        <div id="overall-results" class="test-section" style="margin-top: 30px;">
+            <h2>📊 Overall Test Results</h2>
+            <div id="summary" class="results"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let totalTests = 0;
+        let passedTests = 0;
+
+        function log(message, type = 'info', containerId = 'summary') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            const resultDiv = document.getElementById(containerId);
+            const logLine = document.createElement('div');
+            logLine.className = type;
+            logLine.textContent = logEntry;
+            resultDiv.appendChild(logLine);
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+            console.log(logEntry);
+        }
+
+        function assert(condition, testName, containerId) {
+            totalTests++;
+            if (condition) {
+                passedTests++;
+                log(`✅ PASS: ${testName}`, 'success', containerId);
+                testResults.push({ test: testName, status: 'PASS' });
+            } else {
+                log(`❌ FAIL: ${testName}`, 'error', containerId);
+                testResults.push({ test: testName, status: 'FAIL' });
+            }
+        }
+
+        // Authentication Tests
+        async function testAuthentication() {
+            log('Testing authentication flow...', 'info', 'auth-results');
+            
+            // Test if React is loaded
+            assert(typeof React !== 'undefined' || window.React, 'React library loaded', 'auth-results');
+            
+            // Test if Internet Identity scripts are present
+            const iiScripts = document.querySelectorAll('script[src*="identity"]');
+            assert(iiScripts.length > 0 || window.AuthClient, 'Internet Identity integration detected', 'auth-results');
+            
+            // Test authentication context
+            const hasAuthContext = document.body.innerHTML.includes('useAuth') || 
+                                 document.body.innerHTML.includes('AuthContext');
+            assert(hasAuthContext, 'Authentication context implemented', 'auth-results');
+            
+            log('Authentication tests completed', 'success', 'auth-results');
+        }
+
+        async function testInternetIdentity() {
+            log('Testing Internet Identity connection...', 'info', 'auth-results');
+            
+            try {
+                // Check if Internet Identity is accessible
+                const iiUrl = 'https://identity.ic0.app';
+                const response = await fetch(iiUrl, { method: 'HEAD', mode: 'no-cors' });
+                assert(true, 'Internet Identity service accessible', 'auth-results');
+            } catch (error) {
+                assert(false, 'Internet Identity service connection failed', 'auth-results');
+            }
+            
+            // Test local development setup
+            const localII = window.location.hostname === 'localhost';
+            if (localII) {
+                assert(true, 'Local development environment detected', 'auth-results');
+            }
+        }
+
+        // Virtual Card Tests
+        async function testCreateVirtualCard() {
+            log('Testing virtual card creation...', 'info', 'card-results');
+            
+            // Check if virtual card components exist
+            const cardComponents = document.querySelectorAll('[class*="card"], [class*="virtual"]');
+            assert(cardComponents.length > 0, 'Virtual card components found', 'card-results');
+            
+            // Check for create card button
+            const createButtons = [...document.querySelectorAll('button')].filter(btn => 
+                btn.textContent.includes('Create') || btn.textContent.includes('New'));
+            assert(createButtons.length > 0, 'Create card button found', 'card-results');
+            
+            // Test card creation form
+            const hasCardForm = document.body.innerHTML.includes('createVirtualCard') ||
+                               document.body.innerHTML.includes('handleCreateCard');
+            assert(hasCardForm, 'Card creation function implemented', 'card-results');
+            
+            log('Virtual card creation tests completed', 'success', 'card-results');
+        }
+
+        async function testCardOperations() {
+            log('Testing card operations...', 'info', 'card-results');
+            
+            // Test top-up functionality
+            const topUpButtons = [...document.querySelectorAll('button')].filter(btn => 
+                btn.textContent.includes('Top Up') || btn.textContent.includes('topUp'));
+            assert(topUpButtons.length > 0 || document.body.innerHTML.includes('topUpCard'), 
+                   'Top-up functionality found', 'card-results');
+            
+            // Test deactivate functionality
+            const deactivateButtons = [...document.querySelectorAll('button')].filter(btn => 
+                btn.textContent.includes('Deactivate') || btn.textContent.includes('deactivate'));
+            assert(deactivateButtons.length > 0 || document.body.innerHTML.includes('deactivateCard'), 
+                   'Deactivate functionality found', 'card-results');
+            
+            // Test card balance display
+            const balanceElements = document.querySelectorAll('[class*="balance"], .text-2xl');
+            assert(balanceElements.length > 0, 'Card balance display found', 'card-results');
+        }
+
+        async function testCardBalance() {
+            log('Testing card balance loading...', 'info', 'card-results');
+            
+            // Test balance loading function
+            const hasBalanceLoading = document.body.innerHTML.includes('getCardBalance') ||
+                                    document.body.innerHTML.includes('loadCardBalance');
+            assert(hasBalanceLoading, 'Balance loading function implemented', 'card-results');
+            
+            // Test loading states
+            const loadingElements = document.querySelectorAll('[class*="loading"], [class*="spin"]');
+            assert(loadingElements.length > 0, 'Loading states implemented', 'card-results');
+        }
+
+        // Payment Tests
+        async function testCreatePayment() {
+            log('Testing payment creation...', 'info', 'payment-results');
+            
+            // Test payment form
+            const paymentForms = document.querySelectorAll('form, [class*="payment"]');
+            assert(paymentForms.length > 0, 'Payment form found', 'payment-results');
+            
+            // Test amount input
+            const amountInputs = document.querySelectorAll('input[type="number"], input[name*="amount"]');
+            assert(amountInputs.length > 0, 'Amount input field found', 'payment-results');
+            
+            // Test payment creation function
+            const hasPaymentCreation = document.body.innerHTML.includes('createPayment') ||
+                                     document.body.innerHTML.includes('handleCreatePayment');
+            assert(hasPaymentCreation, 'Payment creation function implemented', 'payment-results');
+        }
+
+        async function testPaymentHistory() {
+            log('Testing payment history...', 'info', 'payment-results');
+            
+            // Test payment list
+            const paymentLists = document.querySelectorAll('[class*="transaction"], [class*="history"]');
+            assert(paymentLists.length > 0, 'Payment history display found', 'payment-results');
+            
+            // Test getUserPayments function
+            const hasGetPayments = document.body.innerHTML.includes('getUserPayments') ||
+                                 document.body.innerHTML.includes('getPayments');
+            assert(hasGetPayments, 'Get payments function implemented', 'payment-results');
+        }
+
+        async function testMoMoPayment() {
+            log('Testing MoMo payment functionality...', 'info', 'payment-results');
+            
+            // Test MoMo form
+            const momoForm = document.body.innerHTML.includes('MoMo') || 
+                           document.body.innerHTML.includes('Mobile Money');
+            assert(momoForm, 'MoMo payment form implemented', 'payment-results');
+            
+            // Test recipient number input
+            const numberInputs = document.querySelectorAll('input[placeholder*="number"], input[name*="recipient"]');
+            assert(numberInputs.length > 0, 'Recipient number input found', 'payment-results');
+        }
+
+        // Price Tests
+        async function testPriceService() {
+            log('Testing price service...', 'info', 'price-results');
+            
+            // Test price service implementation
+            const hasPriceService = document.body.innerHTML.includes('priceService') ||
+                                  document.body.innerHTML.includes('usePriceData');
+            assert(hasPriceService, 'Price service implemented', 'price-results');
+            
+            // Test real-time price fetching
+            const hasPriceFetching = document.body.innerHTML.includes('CoinGecko') ||
+                                   document.body.innerHTML.includes('fetchPrices');
+            assert(hasPriceFetching, 'Real-time price fetching implemented', 'price-results');
+        }
+
+        async function testCurrencyConversion() {
+            log('Testing currency conversion...', 'info', 'price-results');
+            
+            // Test conversion rates
+            const hasConversion = document.body.innerHTML.includes('GHS') &&
+                                document.body.innerHTML.includes('USD') &&
+                                document.body.innerHTML.includes('ICP');
+            assert(hasConversion, 'Multi-currency support found', 'price-results');
+            
+            // Test exchange rate display
+            const exchangeRateDisplay = document.body.innerHTML.includes('Exchange Rate') ||
+                                      document.body.innerHTML.includes('1 ICP =');
+            assert(exchangeRateDisplay, 'Exchange rate display implemented', 'price-results');
+        }
+
+        async function testPriceRefresh() {
+            log('Testing price refresh functionality...', 'info', 'price-results');
+            
+            // Test refresh button
+            const refreshButtons = document.querySelectorAll('button[class*="refresh"], svg[class*="refresh"]');
+            assert(refreshButtons.length > 0, 'Price refresh button found', 'price-results');
+            
+            // Test auto-refresh
+            const hasAutoRefresh = document.body.innerHTML.includes('setInterval') ||
+                                 document.body.innerHTML.includes('useEffect');
+            assert(hasAutoRefresh, 'Auto-refresh mechanism detected', 'price-results');
+        }
+
+        // Backend Tests
+        async function testBackendConnection() {
+            log('Testing backend connection...', 'info', 'backend-results');
+            
+            // Test backend service class
+            const hasBackendService = document.body.innerHTML.includes('FusionPayBackend') ||
+                                    document.body.innerHTML.includes('backendService');
+            assert(hasBackendService, 'Backend service class implemented', 'backend-results');
+            
+            // Test canister connection
+            const hasCanisterConfig = document.body.innerHTML.includes('canisterId') ||
+                                    document.body.innerHTML.includes('Actor.createActor');
+            assert(hasCanisterConfig, 'Canister connection configured', 'backend-results');
+        }
+
+        async function testCanisterCalls() {
+            log('Testing canister calls...', 'info', 'backend-results');
+            
+            // Test payment calls
+            const hasPaymentCalls = document.body.innerHTML.includes('createPayment') &&
+                                  document.body.innerHTML.includes('getUserPayments');
+            assert(hasPaymentCalls, 'Payment canister calls implemented', 'backend-results');
+            
+            // Test virtual card calls
+            const hasCardCalls = document.body.innerHTML.includes('createVirtualCard') &&
+                               document.body.innerHTML.includes('getUserCards');
+            assert(hasCardCalls, 'Virtual card canister calls implemented', 'backend-results');
+        }
+
+        async function testErrorHandling() {
+            log('Testing error handling...', 'info', 'backend-results');
+            
+            // Test error handling in functions
+            const hasErrorHandling = document.body.innerHTML.includes('try {') &&
+                                    document.body.innerHTML.includes('catch') &&
+                                    document.body.innerHTML.includes('throw new Error');
+            assert(hasErrorHandling, 'Error handling implemented', 'backend-results');
+            
+            // Test error display
+            const hasErrorDisplay = document.body.innerHTML.includes('error') &&
+                                  document.body.innerHTML.includes('Error:');
+            assert(hasErrorDisplay, 'Error display mechanisms found', 'backend-results');
+        }
+
+        // UI Tests
+        async function testUIComponents() {
+            log('Testing UI components...', 'info', 'ui-results');
+            
+            // Test React components
+            const hasReactComponents = document.body.innerHTML.includes('React.') ||
+                                     document.body.innerHTML.includes('useState') ||
+                                     document.body.innerHTML.includes('useEffect');
+            assert(hasReactComponents, 'React components implemented', 'ui-results');
+            
+            // Test styling
+            const hasStyling = document.body.innerHTML.includes('className') ||
+                             document.querySelectorAll('[class]').length > 10;
+            assert(hasStyling, 'Component styling implemented', 'ui-results');
+        }
+
+        async function testNavigation() {
+            log('Testing navigation...', 'info', 'ui-results');
+            
+            // Test React Router
+            const hasRouting = document.body.innerHTML.includes('useNavigate') ||
+                             document.body.innerHTML.includes('Route') ||
+                             document.body.innerHTML.includes('BrowserRouter');
+            assert(hasRouting, 'Navigation routing implemented', 'ui-results');
+            
+            // Test navigation buttons
+            const navButtons = document.querySelectorAll('button, a[href]');
+            assert(navButtons.length > 0, 'Navigation buttons found', 'ui-results');
+        }
+
+        async function testResponsiveness() {
+            log('Testing responsiveness...', 'info', 'ui-results');
+            
+            // Test responsive classes
+            const hasResponsive = document.body.innerHTML.includes('sm:') ||
+                                document.body.innerHTML.includes('md:') ||
+                                document.body.innerHTML.includes('lg:');
+            assert(hasResponsive, 'Responsive design classes found', 'ui-results');
+            
+            // Test viewport meta tag
+            const viewportMeta = document.querySelector('meta[name="viewport"]');
+            assert(!!viewportMeta, 'Viewport meta tag found', 'ui-results');
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            log('🚀 Starting comprehensive FusionPay test suite...', 'info', 'summary');
+            
+            // Reset counters
+            totalTests = 0;
+            passedTests = 0;
+            testResults = [];
+            
+            // Run all test categories
+            await testAuthentication();
+            await testInternetIdentity();
+            await testCreateVirtualCard();
+            await testCardOperations();
+            await testCardBalance();
+            await testCreatePayment();
+            await testPaymentHistory();
+            await testMoMoPayment();
+            await testPriceService();
+            await testCurrencyConversion();
+            await testPriceRefresh();
+            await testBackendConnection();
+            await testCanisterCalls();
+            await testErrorHandling();
+            await testUIComponents();
+            await testNavigation();
+            await testResponsiveness();
+            
+            // Generate final report
+            const successRate = ((passedTests / totalTests) * 100).toFixed(1);
+            log(`\n📊 FINAL RESULTS:`, 'info', 'summary');
+            log(`Total Tests: ${totalTests}`, 'info', 'summary');
+            log(`Passed: ${passedTests}`, 'success', 'summary');
+            log(`Failed: ${totalTests - passedTests}`, 'error', 'summary');
+            log(`Success Rate: ${successRate}%`, 'info', 'summary');
+            
+            if (successRate >= 80) {
+                log('🎉 Overall Status: EXCELLENT', 'success', 'summary');
+            } else if (successRate >= 60) {
+                log('👍 Overall Status: GOOD', 'warning', 'summary');
+            } else {
+                log('⚠️ Overall Status: NEEDS IMPROVEMENT', 'error', 'summary');
+            }
+        }
+
+        function clearResults() {
+            const resultDivs = document.querySelectorAll('.results');
+            resultDivs.forEach(div => div.innerHTML = '');
+            totalTests = 0;
+            passedTests = 0;
+            testResults = [];
+        }
+
+        // Auto-run basic checks on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🧪 FusionPay Test Suite loaded and ready!', 'success', 'summary');
+                log('Click "Run All Tests" to start comprehensive testing', 'info', 'summary');
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

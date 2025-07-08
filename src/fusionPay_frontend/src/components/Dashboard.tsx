@@ -20,11 +20,13 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useBackend } from '../utils/useBackend'
+import { usePriceData } from '../utils/priceService'
 import { Payment, VirtualCard } from '../utils/backend'
 import ICPConnectionStatus from './ICPConnectionStatus'
 import ProfileMenu from './ProfileMenu'
 import LoginPrompt from './LoginPrompt'
 import LoadingPage from './LoadingPage'
+import PriceTicker from './PriceTicker'
 
 interface Transaction {
   id: string
@@ -48,6 +50,7 @@ const Dashboard: React.FC = () => {
     isLoading: backendLoading,
     error 
   } = useBackend()
+  const { getCurrentPrice, convertFromICP, refreshPrices, isLoading: priceLoading } = usePriceData()
   
   const navigate = useNavigate()
   const [showBalance, setShowBalance] = useState(true)
@@ -93,7 +96,7 @@ const Dashboard: React.FC = () => {
     id: payment.id,
     type: principal === payment.from.toString() ? 'sent' : 'received',
     amount: formatPaymentAmount(payment.amount, payment.currency),
-    icpAmount: `${(Number(payment.amount) / 238).toFixed(2)} ICP`, // Mock ICP conversion
+    icpAmount: `${(Number(payment.amount) / getCurrentPrice('GHS')).toFixed(2)} ICP`, // Real ICP conversion
     recipient: getPaymentTypeText(payment.paymentType),
     date: formatTimestamp(payment.timestamp),
     status: getPaymentStatusText(payment.status).toLowerCase() as 'completed' | 'pending'
@@ -352,11 +355,18 @@ const Dashboard: React.FC = () => {
                   
                   <div className="text-center">
                     <div className="text-4xl md:text-5xl font-extrabold text-white mb-2">
-                      {showBalance ? `${(totalBalance / 238).toFixed(2)} ICP` : '••••••'}
+                      {showBalance ? `${(totalBalance / getCurrentPrice('GHS')).toFixed(2)} ICP` : '••••••'}
                     </div>
                     <div className="flex items-center justify-center space-x-2 text-lg text-white/80">
                       <span>~GHS {showBalance ? totalBalance.toLocaleString() : '••••••'}</span>
-                      <RefreshCw className="w-4 h-4 cursor-pointer hover:rotate-180 transition-transform duration-500" />
+                      <button 
+                        onClick={refreshPrices}
+                        disabled={priceLoading}
+                        className="p-1 rounded-full hover:bg-white/10 transition-colors disabled:opacity-50"
+                        title="Refresh live prices"
+                      >
+                        <RefreshCw className={`w-4 h-4 cursor-pointer transition-transform duration-500 ${priceLoading ? 'animate-spin' : 'hover:rotate-180'}`} />
+                      </button>
                     </div>
                   </div>
 
@@ -393,6 +403,11 @@ const Dashboard: React.FC = () => {
                   </div>
                 </button>
               ))}
+            </div>
+
+            {/* Live Price Ticker */}
+            <div className="mb-6">
+              <PriceTicker compact={true} className="justify-center" />
             </div>
 
             {/* Recent Activity */}

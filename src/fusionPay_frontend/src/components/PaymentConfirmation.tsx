@@ -270,135 +270,139 @@ const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        <div className="w-full max-w-xl mx-auto space-y-4 lg:space-y-6">
-          {/* Security Badge */}
-          <div className="flex items-center justify-center">
-            <div className="flex items-center space-x-2 bg-green-500/20 text-green-400 px-4 py-2 rounded-full border border-green-500/30">
-              <Shield className="w-4 h-4" />
-              <span className="text-sm font-medium">Secured by ICP Blockchain</span>
-            </div>
-          </div>
-
-          {/* Payment Summary Container */}
+      <main className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="min-h-full flex items-center justify-center p-4">
           <div 
-            ref={summaryRef}
-            className="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/10 relative overflow-hidden"
+            className="w-full max-w-2xl mx-auto space-y-6 my-4"
           >
-            <div className="p-6 md:p-8">
-              {/* Payment Type Header */}
-              <div className="summary-row flex items-center space-x-3 mb-6 pb-4 border-b border-white/10">
-                {React.createElement(getPaymentTypeIcon(), { className: "w-6 h-6 text-blue-400" })}
-                <h2 className="text-lg font-semibold text-white">{getPaymentTypeLabel()}</h2>
+            {/* Security Badge */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center space-x-2 bg-green-500/20 text-green-400 px-4 py-2 rounded-full border border-green-500/30">
+                <Shield className="w-4 h-4" />
+                <span className="text-sm font-medium">Secured by ICP Blockchain</span>
               </div>
+            </div>
 
-              {/* Summary Details */}
-              <div className="space-y-4">
-                {/* Recipient */}
-                <div className="summary-row flex justify-between items-center">
-                  <span className="text-gray-300">Recipient:</span>
-                  <span className="text-white font-semibold text-right max-w-[60%] truncate">{paymentData.recipient}</span>
+            {/* Payment Summary Container */}
+            <div 
+              ref={summaryRef}
+              className="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/10 relative overflow-hidden"
+            >
+              <div className="p-6 md:p-8">
+                {/* Payment Type Header */}
+                <div className="summary-row flex items-center space-x-3 mb-6 pb-4 border-b border-white/10">
+                  {React.createElement(getPaymentTypeIcon(), { className: "w-6 h-6 text-blue-400" })}
+                  <h2 className="text-lg font-semibold text-white">{getPaymentTypeLabel()}</h2>
                 </div>
 
-                {/* Amount */}
-                <div className="summary-row flex justify-between items-center">
-                  <span className="text-gray-300">Amount:</span>
-                  <span className="text-white font-semibold text-lg">{paymentData.amount}</span>
-                </div>
+                {/* Summary Details */}
+                <div className="space-y-4">
+                  {/* Recipient */}
+                  <div className="summary-row flex justify-between items-center">
+                    <span className="text-gray-300">Recipient:</span>
+                    <span className="text-white font-semibold text-right max-w-[60%] truncate">{paymentData.recipient}</span>
+                  </div>
 
-                {/* Fees Breakdown */}
-                <div className="summary-row border-t border-gray-700 pt-4">
-                  <div className="text-gray-400 text-sm mb-3">Transaction Fees:</div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-300">Network Fee:</span>
-                      <span className="text-white">{paymentData.networkFee}</span>
+                  {/* Amount */}
+                  <div className="summary-row flex justify-between items-center">
+                    <span className="text-gray-300">Amount:</span>
+                    <span className="text-white font-semibold text-lg">{paymentData.amount}</span>
+                  </div>
+
+                  {/* Fees Breakdown */}
+                  <div className="summary-row border-t border-gray-700 pt-4">
+                    <div className="text-gray-400 text-sm mb-3">Transaction Fees:</div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-300">Network Fee:</span>
+                        <span className="text-white">{paymentData.networkFee}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-300">fusionPay Fee:</span>
+                        <span className="text-white">{paymentData.fusionPayFee}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-300">fusionPay Fee:</span>
-                      <span className="text-white">{paymentData.fusionPayFee}</span>
+                  </div>
+
+                  {/* Total Fiat */}
+                  <div className="summary-row flex justify-between items-center border-t border-gray-700 pt-4">
+                    <span className="text-gray-300 font-medium">Total Charged:</span>
+                    <span className="text-white font-bold text-lg">{paymentData.totalFiat}</span>
+                  </div>
+
+                  {/* Exchange Rate */}
+                  <div className="summary-row bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-blue-300 text-sm">Current Rate:</span>
+                      <span className="text-blue-400 font-semibold">{paymentData.exchangeRate}</span>
                     </div>
                   </div>
                 </div>
-
-                {/* Total Fiat */}
-                <div className="summary-row flex justify-between items-center border-t border-gray-700 pt-4">
-                  <span className="text-gray-300 font-medium">Total Charged:</span>
-                  <span className="text-white font-bold text-lg">{paymentData.totalFiat}</span>
-                </div>
-
-                {/* Exchange Rate */}
-                <div className="summary-row bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-blue-300 text-sm">Current Rate:</span>
-                    <span className="text-blue-400 font-semibold">{paymentData.exchangeRate}</span>
-                  </div>
-                </div>
               </div>
             </div>
-          </div>
 
-          {/* ICP Deduction Highlight */}
-          <div 
-            ref={icpDeductionRef}
-            className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-2xl border border-blue-500/30 relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10"></div>
-            <div className="relative z-10 text-center p-6">
-              <div className="flex items-center justify-center space-x-2 mb-3">
-                <Zap className="w-5 h-5 text-yellow-400" />
-                <span className="text-gray-300 text-sm font-medium">Total ICP Deduction</span>
-              </div>
-              <div className="text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400 drop-shadow-lg">
-                {paymentData.totalIcpDeduction}
-              </div>
-            </div>
-          </div>
-
-          {/* Disclaimer */}
-          <div 
-            ref={disclaimerRef}
-            className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4"
-          >
-            <div className="flex items-start space-x-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-yellow-300">
-                By confirming, you authorize the immutable on-chain deduction of your ICP for this transaction. This action cannot be reversed.
-              </p>
-            </div>
-          </div>
-
-          {/* Authorization Prompt */}
-          <div ref={authPromptRef} className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <Lock className="w-5 h-5 text-purple-400" />
-              <span className="text-lg text-white font-semibold">Confirm your identity to complete payment</span>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div ref={buttonsRef} className="space-y-3">
-            <button
-              ref={confirmButtonRef}
-              onClick={handleConfirmClick}
-              onMouseEnter={(e) => handleButtonHover(e.currentTarget)}
-              onMouseLeave={(e) => handleButtonLeave(e.currentTarget)}
-              className="w-full py-4 rounded-lg font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition-all duration-300 shadow-lg"
+            {/* ICP Deduction Highlight */}
+            <div 
+              ref={icpDeductionRef}
+              className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-2xl border border-blue-500/30 relative overflow-hidden"
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Fingerprint className="w-5 h-5" />
-                <span>Confirm & Pay</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10"></div>
+              <div className="relative z-10 text-center p-6">
+                <div className="flex items-center justify-center space-x-2 mb-3">
+                  <Zap className="w-5 h-5 text-yellow-400" />
+                  <span className="text-gray-300 text-sm font-medium">Total ICP Deduction</span>
+                </div>
+                <div className="text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400 drop-shadow-lg">
+                  {paymentData.totalIcpDeduction}
+                </div>
               </div>
-            </button>
-            
-            <button
-              onClick={onCancel}
-              onMouseEnter={(e) => handleButtonHover(e.currentTarget)}
-              onMouseLeave={(e) => handleButtonLeave(e.currentTarget)}
-              className="w-full py-3 rounded-lg font-medium text-white bg-transparent border border-gray-700 hover:bg-gray-800 transition-colors"
+            </div>
+
+            {/* Disclaimer */}
+            <div 
+              ref={disclaimerRef}
+              className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4"
             >
-              Cancel Payment
-            </button>
+              <div className="flex items-start space-x-2">
+                <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-yellow-300">
+                  By confirming, you authorize the immutable on-chain deduction of your ICP for this transaction. This action cannot be reversed.
+                </p>
+              </div>
+            </div>
+
+            {/* Authorization Prompt */}
+            <div ref={authPromptRef} className="text-center">
+              <div className="flex items-center justify-center space-x-2 mb-4">
+                <Lock className="w-5 h-5 text-purple-400" />
+                <span className="text-lg text-white font-semibold">Confirm your identity to complete payment</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div ref={buttonsRef} className="space-y-3">
+              <button
+                ref={confirmButtonRef}
+                onClick={handleConfirmClick}
+                onMouseEnter={(e) => handleButtonHover(e.currentTarget)}
+                onMouseLeave={(e) => handleButtonLeave(e.currentTarget)}
+                className="w-full py-4 rounded-lg font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition-all duration-300 shadow-lg"
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <Fingerprint className="w-5 h-5" />
+                  <span>Confirm & Pay</span>
+                </div>
+              </button>
+              
+              <button
+                onClick={onCancel}
+                onMouseEnter={(e) => handleButtonHover(e.currentTarget)}
+                onMouseLeave={(e) => handleButtonLeave(e.currentTarget)}
+                className="w-full py-3 rounded-lg font-medium text-white bg-transparent border border-gray-700 hover:bg-gray-800 transition-colors"
+              >
+                Cancel Payment
+              </button>
+            </div>
           </div>
         </div>
       </main>

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { AuthClient } from '@dfinity/auth-client'
 import { Identity } from '@dfinity/agent'
+import { config } from '../config'
 import { backendService } from '../utils/backend'
 
 interface AuthContextType {
@@ -73,9 +74,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true)
       
       await authClient.login({
-        identityProvider: import.meta.env.DEV 
-          ? `http://localhost:4943/?canisterId=${import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID || 'rdmx6-jaaaa-aaaaa-aaadq-cai'}`
+        identityProvider: config.ic.network === 'local'
+          ? `${config.ic.host}/?canisterId=${config.ic.internetIdentityCanisterId}`
           : 'https://identity.ic0.app',
+        maxTimeToLive: BigInt(config.security.sessionTimeout * 1000000), // Convert to nanoseconds
         onSuccess: async () => {
           const identity = authClient.getIdentity()
           setIdentity(identity)

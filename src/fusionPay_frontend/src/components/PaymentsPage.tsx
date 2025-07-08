@@ -16,6 +16,7 @@ import BackButton from './BackButton'
 import { useAuth } from '../contexts/AuthContext'
 import { useBackend } from '../utils/useBackend'
 import { Payment as BackendPayment } from '../utils/backend'
+import { usePriceData } from '../utils/priceService'
 
 interface Payment {
   id: string
@@ -40,6 +41,7 @@ const PaymentsPage: React.FC = () => {
     isLoading,
     error 
   } = useBackend()
+  const { getCurrentPrice } = usePriceData()
   
   const headerRef = useRef<HTMLDivElement>(null)
   const quickActionsRef = useRef<HTMLDivElement>(null)
@@ -69,7 +71,7 @@ const PaymentsPage: React.FC = () => {
     type: getPaymentTypeText(payment.paymentType) === 'Mobile Money' ? 'momo' : 'virtual-card',
     recipient: `${getPaymentTypeText(payment.paymentType)} - ${payment.description}`,
     amount: formatPaymentAmount(payment.amount, payment.currency),
-    icpAmount: `${(Number(payment.amount) / 238).toFixed(2)} ICP`,
+    icpAmount: `${(Number(payment.amount) / getCurrentPrice('GHS')).toFixed(2)} ICP`,
     status: getPaymentStatusText(payment.status).toLowerCase() as 'completed' | 'pending' | 'failed',
     date: formatTimestamp(payment.timestamp),
     reference: payment.id

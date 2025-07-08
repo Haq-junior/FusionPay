@@ -132,108 +132,110 @@ const ReceivePage: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        <div className="w-full max-w-md mx-auto space-y-6">
-          
-          {/* QR Code Container */}
-          <div 
-            ref={qrContainerRef}
-            className="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 border border-white/10 text-center"
-          >
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-white mb-2">Your ICP Address</h2>
-              <p className="text-gray-400 text-sm">Share this address to receive ICP payments</p>
-            </div>
+      <main className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="min-h-full flex items-center justify-center p-4">
+          <div className="w-full max-w-md mx-auto space-y-6">
             
-            {/* QR Code Placeholder */}
-            <div className="w-48 h-48 mx-auto bg-white rounded-xl p-4 mb-6 relative">
-              <div className="w-full h-full bg-gray-900 rounded-lg flex items-center justify-center">
-                <QrCode className="w-24 h-24 text-white" />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <Wallet className="w-4 h-4 text-white" />
-                </div>
-              </div>
-            </div>
-            
-            <p className="text-gray-400 text-xs">
-              Scan this QR code to get the address
-            </p>
-          </div>
-
-          {/* Address Container */}
-          <div 
-            ref={addressContainerRef}
-            className="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-white/10"
-          >
-            <div className="mb-4">
-              <label className="block text-gray-300 text-sm font-medium mb-2">
-                ICP Principal ID
-              </label>
-              <div className="relative">
-                <div className="w-full p-4 bg-gray-900/80 text-white border border-gray-700 rounded-lg font-mono text-sm break-all">
-                  {receivingAddress}
-                </div>
-                <button
-                  onClick={handleCopyAddress}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors"
-                  title="Copy Address"
-                >
-                  {copied ? (
-                    <CheckCircle className="w-4 h-4 text-white" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-white" />
-                  )}
-                </button>
+            {/* QR Code Container */}
+            <div 
+              ref={qrContainerRef}
+              className="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 border border-white/10 text-center"
+            >
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-white mb-2">Your ICP Address</h2>
+                <p className="text-gray-400 text-sm">Share this address to receive ICP payments</p>
               </div>
               
-              {copied && (
-                <div className="copy-feedback text-green-400 text-xs font-medium mt-2">
-                  ✓ Address copied to clipboard
+              {/* QR Code Placeholder */}
+              <div className="w-48 h-48 mx-auto bg-white rounded-xl p-4 mb-6 relative">
+                <div className="w-full h-full bg-gray-900 rounded-lg flex items-center justify-center">
+                  <QrCode className="w-24 h-24 text-white" />
                 </div>
-              )}
-            </div>
-            
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-              <div className="text-blue-300 text-xs font-medium mb-1">Important:</div>
-              <p className="text-blue-200 text-xs leading-relaxed">
-                Only send ICP tokens to this address. Sending other tokens may result in permanent loss.
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                    <Wallet className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-gray-400 text-xs">
+                Scan this QR code to get the address
               </p>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div ref={actionsRef} className="space-y-3">
-            <button
-              onClick={handleCopyAddress}
-              className="w-full py-4 rounded-lg bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white font-bold text-lg transition-all duration-300 shadow-lg"
+            {/* Address Container */}
+            <div 
+              ref={addressContainerRef}
+              className="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-white/10"
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Copy className="w-5 h-5" />
-                <span>Copy Address</span>
+              <div className="mb-4">
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  ICP Principal ID
+                </label>
+                <div className="relative">
+                  <div className="w-full p-4 bg-gray-900/80 text-white border border-gray-700 rounded-lg font-mono text-sm break-all">
+                    {receivingAddress}
+                  </div>
+                  <button
+                    onClick={handleCopyAddress}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors"
+                    title="Copy Address"
+                  >
+                    {copied ? (
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-white" />
+                    )}
+                  </button>
+                </div>
+                
+                {copied && (
+                  <div className="copy-feedback text-green-400 text-xs font-medium mt-2">
+                    ✓ Address copied to clipboard
+                  </div>
+                )}
               </div>
-            </button>
-            
-            <button
-              onClick={handleShare}
-              className="w-full py-3 rounded-lg bg-gray-700 hover:bg-gray-600 text-white font-medium transition-colors"
-            >
-              <div className="flex items-center justify-center space-x-2">
-                <Share className="w-4 h-4" />
-                <span>Share Address</span>
+              
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                <div className="text-blue-300 text-xs font-medium mb-1">Important:</div>
+                <p className="text-blue-200 text-xs leading-relaxed">
+                  Only send ICP tokens to this address. Sending other tokens may result in permanent loss.
+                </p>
               </div>
-            </button>
-          </div>
+            </div>
 
-          {/* Instructions */}
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/5">
-            <h3 className="text-white font-medium mb-2 text-sm">How to receive ICP:</h3>
-            <ul className="text-gray-400 text-xs space-y-1">
-              <li>• Share your address or QR code with the sender</li>
-              <li>• Wait for the transaction to be confirmed on the network</li>
-              <li>• Your balance will update automatically</li>
-            </ul>
+            {/* Action Buttons */}
+            <div ref={actionsRef} className="space-y-3">
+              <button
+                onClick={handleCopyAddress}
+                className="w-full py-4 rounded-lg bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white font-bold text-lg transition-all duration-300 shadow-lg"
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <Copy className="w-5 h-5" />
+                  <span>Copy Address</span>
+                </div>
+              </button>
+              
+              <button
+                onClick={handleShare}
+                className="w-full py-3 rounded-lg bg-gray-700 hover:bg-gray-600 text-white font-medium transition-colors"
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <Share className="w-4 h-4" />
+                  <span>Share Address</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Instructions */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/5">
+              <h3 className="text-white font-medium mb-2 text-sm">How to receive ICP:</h3>
+              <ul className="text-gray-400 text-xs space-y-1">
+                <li>• Share your address or QR code with the sender</li>
+                <li>• Wait for the transaction to be confirmed on the network</li>
+                <li>• Your balance will update automatically</li>
+              </ul>
+            </div>
           </div>
         </div>
       </main>
