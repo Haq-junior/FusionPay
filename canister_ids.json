@@ -1,0 +1,11 @@
+{
+  "fusionPay_backend": {
+    "ic": "oipqh-gqaaa-aaaab-qb4cq-cai"
+  },
+  "fusionPay_frontend": {
+    "ic": "obm33-qyaaa-aaaab-qb4da-cai"
+  },
+  "internet_identity": {
+    "ic": "ogn5p-5aaaa-aaaab-qb4dq-cai"
+  }
+}

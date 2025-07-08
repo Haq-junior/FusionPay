@@ -29,6 +29,17 @@
       "packtool": ""
     }
   },
+  "networks": {
+    "ic": {
+      "providers": ["https://ic0.app"],
+      "type": "persistent",
+      "canister_config": {
+        "internet_identity": {
+          "canister_id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      }
+    }
+  },
   "output_env_file": ".env",
   "version": 1
 }
